@@ -1,0 +1,95 @@
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'PokeAPI ejemplo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  String _pokemonName = '';
+  String _pokemonImage = '';
+
+  Future<void> fetchPokemon() async {
+    final response = await http.get(Uri.parse('https://pokeapi.co/api/v2/pokemon/1/'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      setState(() {
+        _pokemonName = data['name'];
+        _pokemonImage = data['sprites']['front_default'];
+      });
+    } else {
+      throw Exception('Failed to load Pokemon');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('PokeAPI Example'),
+      ),
+      body: Stack(
+        children: [
+          // Fondo
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/background_image.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                // Mensaje de bienvenida
+                const Text(
+                  'Bienvenido a la mejor aplicación:',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                SizedBox(height: 20),
+                // Nombre de la aplicación
+                const Text(
+                  'Las Pelis del Erick',
+                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    fetchPokemon();
+                  },
+                  child: Text('Fetch Pokemon'),
+                ),
+                SizedBox(height: 20),
+                Text('Pokemon Name: $_pokemonName'),
+                SizedBox(height: 20),
+                _pokemonImage.isNotEmpty
+                    ? Image.network(_pokemonImage)
+                    : Container(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
